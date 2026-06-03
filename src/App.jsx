@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 
 const categorias = [
@@ -29,6 +29,8 @@ const categorias = [
 ];
 
 function App() {
+  const categoriasRef = useRef(null);
+
   const [itens, setItens] = useState(() => {
     const itensSalvos = localStorage.getItem('listaDeCompras');
 
@@ -48,6 +50,17 @@ function App() {
   useEffect(() => {
     localStorage.setItem('listaDeCompras', JSON.stringify(itens));
   }, [itens]);
+
+  function rolarCategorias(direcao) {
+    if (!categoriasRef.current) return;
+
+    const distancia = 105;
+
+    categoriasRef.current.scrollBy({
+      left: direcao === 'direita' ? distancia : -distancia,
+      behavior: 'smooth',
+    });
+  }
 
   function adicionarItem(event) {
     event.preventDefault();
@@ -186,6 +199,7 @@ function App() {
             <input
               type="number"
               min="1"
+              max="1000"
               value={quantidade}
               onChange={(event) => setQuantidade(event.target.value)}
             />
@@ -197,6 +211,7 @@ function App() {
               type="text"
               placeholder="Ex: arroz"
               value={nome}
+              maxLength={40}
               onChange={(event) => setNome(event.target.value)}
             />
           </label>
@@ -214,19 +229,29 @@ function App() {
         )}
       </section>
 
-      <section className="categorias">
-        {categorias.map((cat) => (
-          <button
-            key={cat.nome}
-            className={categoriaAtiva === cat.nome ? 'categoria ativa' : 'categoria'}
-            onClick={() => setCategoriaAtiva(cat.nome)}
-          >
-            <span className="imagem-categoria">
-              <img src={cat.imagem} alt="" />
-            </span>
-            <span>{cat.nome}</span>
-          </button>
-        ))}
+      <section className="categorias-area">
+        <button type="button" className="botao-seta" onClick={() => rolarCategorias('esquerda')}>
+          ‹
+        </button>
+
+        <div className="categorias" ref={categoriasRef}>
+          {categorias.map((cat) => (
+            <button
+              key={cat.nome}
+              className={categoriaAtiva === cat.nome ? 'categoria ativa' : 'categoria'}
+              onClick={() => setCategoriaAtiva(cat.nome)}
+            >
+              <span className="imagem-categoria">
+                <img src={cat.imagem} alt={cat.nome} />
+              </span>
+              <span>{cat.nome}</span>
+            </button>
+          ))}
+        </div>
+
+        <button type="button" className="botao-seta" onClick={() => rolarCategorias('direita')}>
+          ›
+        </button>
       </section>
 
       <section className="lista">
